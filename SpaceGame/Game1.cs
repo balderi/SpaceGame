@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SpaceGame.Entities;
 
 namespace SpaceGame
 {
@@ -11,7 +12,13 @@ namespace SpaceGame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        
+        Player player;
+        Camera cam;
+        Texture2D background;
+        Vector2 bgVec;
+
+        public static int ScreenWidth, ScreenHeight;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -26,7 +33,10 @@ namespace SpaceGame
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            IsMouseVisible = true;
+
+            ScreenWidth = graphics.PreferredBackBufferWidth;
+            ScreenHeight = graphics.PreferredBackBufferHeight;
 
             base.Initialize();
         }
@@ -39,8 +49,13 @@ namespace SpaceGame
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
+            Texture2D playerTex = Content.Load<Texture2D>("Graphics/Sprites/playerShip1_orange");
+            Texture2D lazor = Content.Load<Texture2D>("Graphics/Sprites/laserBlue01");
+            player = new Player(5, 100, new Rectangle(), playerTex, new Vector2(100f, 100f), GraphicsDevice.Viewport, Window, lazor);
+            cam = new Camera();
+            
+            background = Content.Load<Texture2D>("Graphics/Backgrounds/black");
+            bgVec = new Vector2(0f);
         }
 
         /// <summary>
@@ -62,8 +77,9 @@ namespace SpaceGame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
-
+            player.Update(gameTime);
+            cam.Follow(player);
+            Window.Title = "(" + ScreenWidth + "x" + ScreenHeight + "), X: " + player.Container.X + ", Y: " + player.Container.Y;
             base.Update(gameTime);
         }
 
@@ -73,9 +89,15 @@ namespace SpaceGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
-            // TODO: Add your drawing code here
+            spriteBatch.Begin(transformMatrix:cam.Transform);
+
+            spriteBatch.Draw(background, bgVec, Color.White);
+
+            player.Draw(spriteBatch);
+
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
